@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="웹소설 원고를 붙여넣으면 문장 길이 리듬·종결어미·대화 비율·반복 표현을 그래프로 보여주는 무료 분석 도구. 모든 분석은 브라우저 안에서만 처리돼요.">
+<meta name="theme-color" content="#f1eee7">
+<!-- 공유 미리보기: 배포 후 og:url 을 실제 주소로, og-image.png(권장 1200×630, 대시보드 스크린샷)를 같은 폴더에 올리면 트위터/카톡에 미리보기가 떠요 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="문장 그래프 · 웹소설 문장 분석">
+<meta property="og:description" content="원고를 붙여넣으면 문장 리듬·어미·대화 비율을 그래프로. 100% 브라우저 안에서 처리되는 무료 도구.">
+<meta property="og:image" content="og-image.png">
+<!-- <meta property="og:url" content="https://your-page-url/"> -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@E_FFILIA">
+<meta name="twitter:title" content="문장 그래프 · 웹소설 문장 분석">
+<meta name="twitter:description" content="원고를 붙여넣으면 문장 리듬·어미·대화 비율을 그래프로. 무료, 가입 없음.">
+<meta name="twitter:image" content="og-image.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%235b63d6'/><rect x='7' y='15' width='4' height='10' rx='1' fill='%23fff'/><rect x='14' y='8' width='4' height='17' rx='1' fill='%23fff'/><rect x='21' y='18' width='4' height='7' rx='1' fill='%23fff'/></svg>">
+<title>문장 그래프 · 웹소설 문장 분석</title>
+<meta name="description" content="웹소설 원고를 붙여넣으면 문장 길이 리듬·종결어미·대화 비율·반복 표현을 그래프로 분석해주는 무료 도구. 모든 분석은 브라우저 안에서 처리돼요.">
+<meta name="theme-color" content="#5b63d6">
+<!-- ▼ 배포 후 아래 og:url / og:image / twitter:image 의 주소를 실제 배포 주소로 바꿔주세요 (예: https://your-id.github.io/munjang-graph/) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="문장 그래프">
+<meta property="og:title" content="문장 그래프 · 웹소설 문장 분석">
+<meta property="og:description" content="원고를 붙여넣으면 문장 리듬·어미·대화 비율을 그래프로. 무료, 설치 없이 브라우저에서.">
+<meta property="og:url" content="https://여기에-배포주소-입력">
+<meta property="og:image" content="https://여기에-배포주소-입력/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="문장 그래프 · 웹소설 문장 분석">
+<meta name="twitter:description" content="원고를 붙여넣으면 문장 리듬·어미·대화 비율을 그래프로. 무료, 설치 없이.">
+<meta name="twitter:image" content="https://여기에-배포주소-입력/og.png">
+<meta name="twitter:creator" content="@E_FFILIA">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235b63d6'/%3E%3Crect x='7' y='17' width='4' height='8' rx='1' fill='%23fff'/%3E%3Crect x='14' y='11' width='4' height='14' rx='1' fill='%23fff'/%3E%3Crect x='21' y='7' width='4' height='18' rx='1' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f1eee7; --panel:#fbfaf6; --panel2:#f5f2ea; --border:#e3ded3;
+  --text:#2b2c31; --muted:#696b73; --faint:#9a9893;
+  --acc:#5b63d6; --acc2:#1aa08c; --warn:#b8862a; --good:#2a9466;
+  --bad:#cf5b54;
+  --r:14px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:'Pretendard','Pretendard Variable',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text); line-height:1.6;
+  font-feature-settings:"tnum";
+  padding:0 0 80px;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:0 18px;}
+
+/* header */
+header{padding:34px 0 22px; border-bottom:1px solid var(--border); margin-bottom:24px;}
+.brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+.brand h1{font-size:26px; font-weight:800; letter-spacing:-0.03em;}
+.brand h1 .dot{color:var(--acc);}
+.brand .sub{font-size:13px; color:var(--muted);}
+.privacy{margin-top:10px; font-size:12px; color:var(--faint);}
+.privacy b{color:var(--acc2); font-weight:600;}
+
+/* input */
+.inputbox{background:var(--panel); border:1px solid var(--border); border-radius:var(--r); padding:16px; margin-bottom:22px;}
+.inputbox .row{display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; align-items:center;}
+input[type=text], textarea{
+  background:var(--panel2); border:1px solid var(--border); color:var(--text);
+  border-radius:10px; padding:11px 13px; font-family:inherit; font-size:16px; width:100%;
+}
+input[type=text]:focus, textarea:focus{outline:2px solid var(--acc); outline-offset:-1px; border-color:transparent;}
+textarea{min-height:220px; resize:vertical; line-height:1.8;}
+.titlefield{flex:1; min-width:160px;}
+button{
+  background:var(--acc); color:#fff; border:none; border-radius:10px;
+  padding:11px 18px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;
+  transition:transform .08s, filter .15s; white-space:nowrap;
+}
+button:hover{filter:brightness(1.08);}
+button:active{transform:translateY(1px);}
+button.ghost{background:transparent; color:var(--muted); border:1px solid var(--border);}
+button.ghost:hover{color:var(--text); border-color:var(--faint);}
+button.sm{padding:7px 12px; font-size:13px;}
+.hint{font-size:12px; color:var(--faint);}
+
+/* summary stats */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px;}
+.stat{background:var(--panel); border:1px solid var(--border); border-radius:var(--r); padding:16px 16px; box-shadow:0 1px 2px rgba(43,44,49,.04), 0 3px 10px rgba(43,44,49,.035);}
+.stat .n{font-size:28px; font-weight:800; letter-spacing:-0.02em; line-height:1.1;}
+.stat .l{font-size:12px; color:var(--muted); margin-top:4px;}
+.stat .n .u{font-size:14px; color:var(--faint); font-weight:600; margin-left:2px;}
+
+/* dashboard grid */
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+.card{background:var(--panel); border:1px solid var(--border); border-radius:var(--r); padding:18px; box-shadow:0 1px 2px rgba(43,44,49,.04), 0 3px 10px rgba(43,44,49,.035);}
+.card h2{font-size:15px; font-weight:700; margin-bottom:3px; letter-spacing:-0.01em;}
+.card .desc{font-size:12px; color:var(--muted); margin-bottom:14px;}
+.card.full{grid-column:1 / -1;}
+.chartbox{position:relative; height:230px;}
+.chartbox.tall{height:300px;}
+
+.flag{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+  padding:5px 10px; border-radius:20px; margin-top:12px;}
+.flag.warn{background:rgba(184,134,42,.13); color:#946a17;}
+.flag.ok{background:rgba(42,148,102,.13); color:#1f7b53;}
+.flag .d{width:6px; height:6px; border-radius:50%; background:currentColor;}
+
+.metaline{display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:4px;}
+.metaline b{color:var(--text); font-weight:700;}
+
+/* tables / lists */
+.table{width:100%; font-size:13.5px; border-collapse:collapse;}
+.table th{text-align:left; color:var(--muted); font-weight:600; font-size:12px; padding:7px 8px; border-bottom:1px solid var(--border);}
+.table td{padding:7px 8px; border-bottom:1px solid rgba(43,44,49,.08);}
+.table td:last-child, .table th:last-child{text-align:right;}
+.bar-inline{height:6px; background:var(--acc); border-radius:3px; display:inline-block; vertical-align:middle; margin-right:8px;}
+.tag{display:inline-block; background:var(--panel2); border:1px solid var(--border); border-radius:6px; padding:2px 7px; font-size:12px; margin:2px 3px 2px 0; color:var(--muted);}
+.echo{font-size:13px; color:var(--muted); margin-top:10px;}
+.echo .w{color:var(--acc); font-weight:700;}
+.echo .pos{color:var(--warn);}
+
+/* filler editor */
+.filler-edit{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:14px;}
+.filler-edit .f{flex:1; min-width:220px;}
+.filler-edit label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px;}
+.cols2{display:grid; grid-template-columns:1fr 1fr; gap:24px;}
+
+/* snapshots */
+.snap-list{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+.snap{display:flex; align-items:center; gap:12px; background:var(--panel2); border:1px solid var(--border);
+  border-radius:10px; padding:10px 13px;}
+.snap.sel{border-color:var(--acc);}
+.snap input[type=checkbox]{width:17px; height:17px; accent-color:var(--acc); cursor:pointer;}
+.snap .info{flex:1; min-width:0;}
+.snap .t{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.snap .m{font-size:12px; color:var(--muted);}
+.snap .del{color:var(--faint); cursor:pointer; font-size:18px; line-height:1; padding:2px 6px;}
+.snap .del:hover{color:var(--bad);}
+
+.cmp-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+.cmp{width:100%; min-width:440px; border-collapse:collapse; font-size:13.5px; margin-top:8px;}
+.cmp th{text-align:left; color:var(--muted); font-size:12px; font-weight:600; padding:9px 8px; border-bottom:1px solid var(--border);}
+.cmp td{padding:9px 8px; border-bottom:1px solid rgba(43,44,49,.08);}
+.cmp td.num{text-align:right; font-variant-numeric:tabular-nums;}
+.delta{font-weight:700;}
+.delta.up{color:var(--good);} .delta.down{color:var(--bad);} .delta.neu{color:var(--muted);}
+.cmp .hd{display:flex; flex-direction:column;}
+.cmp .hd small{color:var(--faint); font-weight:400;}
+
+.empty{color:var(--faint); font-size:13px; text-align:center; padding:30px 10px;}
+.site-foot{margin-top:36px; padding-top:24px; border-top:1px solid var(--border); text-align:center;}
+.foot-links{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+.foot-links a{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;
+  color:var(--text); text-decoration:none; background:var(--panel); border:1px solid var(--border);
+  border-radius:20px; padding:7px 14px; transition:border-color .15s, color .15s;}
+.foot-links a:hover{border-color:var(--acc); color:var(--acc);}
+.foot-links a.buy{background:var(--acc); color:#fff; border-color:var(--acc);}
+.foot-links a.buy:hover{filter:brightness(1.06); color:#fff;}
+.footer-note{font-size:12px; color:var(--faint); text-align:center; line-height:1.7;}
+
+/* responsive */
+@media(max-width:760px){
+  .grid{grid-template-columns:1fr;}
+  .stats{grid-template-columns:1fr 1fr;}
+  .cols2{grid-template-columns:1fr; gap:18px;}
+  .brand h1{font-size:22px;}
+  .card.full .chartbox{height:200px;}
+  .card{padding:16px;}
+  .cmp th, .cmp td{padding:8px 5px; font-size:12.5px;}
+  .stat .n{font-size:24px;}
+}
+@media(max-width:420px){
+  .wrap{padding:0 13px;}
+  .stats{gap:9px;}
+  .stat{padding:13px 12px;}
+}
+#cmpResult{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+.cmp{min-width:340px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <h1>문장 그래프<span class="dot">.</span></h1>
+      <span class="sub">웹소설 문장 분석 도구</span>
+    </div>
+    <p class="privacy">🔒 모든 분석은 <b>이 브라우저 안</b>에서만 처리돼요. 입력한 글은 어디로도 전송되지 않습니다.</p>
+  </header>
+
+  <!-- 입력 -->
+  <section class="inputbox">
+    <div class="row">
+      <input type="text" id="title" class="titlefield" placeholder="제목 / 회차 (스냅샷 저장에 쓰여요. 예: 3화 초고)">
+      <button id="saveSnap">스냅샷 저장</button>
+    </div>
+    <textarea id="src" placeholder="여기에 원고를 붙여넣으면 바로 분석돼요. 한 회차, 한 장면, 한 문단 — 단위는 자유롭게."></textarea>
+    <div class="row" style="margin-top:10px; margin-bottom:0;">
+      <span class="hint">붙여넣는 순간 자동 분석</span>
+      <button class="ghost sm" id="loadSample" style="margin-left:auto;">예시 글 넣어보기</button>
+    </div>
+  </section>
+
+  <!-- 요약 -->
+  <section class="stats" id="stats">
+    <div class="stat"><div class="n" id="s-char">0<span class="u">자</span></div><div class="l">총 글자수 (공백 제외)</div></div>
+    <div class="stat"><div class="n" id="s-sent">0<span class="u">문장</span></div><div class="l">문장 수</div></div>
+    <div class="stat"><div class="n" id="s-para">0<span class="u">문단</span></div><div class="l">문단 수</div></div>
+    <div class="stat"><div class="n" id="s-avg">0<span class="u">자</span></div><div class="l">평균 문장 길이</div></div>
+  </section>
+
+  <!-- 대시보드 -->
+  <section class="grid">
+
+    <div class="card full">
+      <h2>문장 길이 리듬</h2>
+      <p class="desc">문장이 길고 짧게 출렁이면 리듬이 살아요. 막대가 평평하면 호흡이 단조로워진 신호.</p>
+      <div class="metaline">
+        <span>평균 <b id="r-avg">0</b>자</span>
+        <span>표준편차 <b id="r-std">0</b></span>
+        <span>최장 <b id="r-max">0</b>자 · 최단 <b id="r-min">0</b>자</span>
+      </div>
+      <div class="chartbox"><canvas id="chartRhythm"></canvas></div>
+      <div id="r-flag"></div>
+    </div>
+
+    <div class="card">
+      <h2>종결어미 다양성</h2>
+      <p class="desc">문장 끝맺음 분포. 같은 어미가 계속 반복되면 글이 평탄해 보여요.</p>
+      <div class="chartbox"><canvas id="chartEnding"></canvas></div>
+      <div id="e-flag"></div>
+    </div>
+
+    <div class="card">
+      <h2>대화 / 지문 비율</h2>
+      <p class="desc">따옴표 안(대화·속마음) vs 바깥(서술) 글자수. 직선·곡선 따옴표, 「」『』 모두 인식.</p>
+      <div class="chartbox"><canvas id="chartDialogue"></canvas></div>
+      <div class="metaline" id="d-meta" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card full">
+      <h2>문단 길이 분포</h2>
+      <p class="desc">문단마다 글자수. 한 덩어리가 너무 길거나 토막만 이어지는지 한눈에.</p>
+      <div class="chartbox"><canvas id="chartPara"></canvas></div>
+    </div>
+
+  </section>
+
+  <!-- 반복 단어 & 에코 -->
+  <section class="card full" style="margin-bottom:16px;">
+    <h2>반복 단어 &amp; 에코</h2>
+    <p class="desc">자주 쓴 단어와, 같은 단어가 가까운 문장 안에서 또 튀어나오는 '에코'를 짚어줘요. (조사는 대략 떼어냄)</p>
+    <div class="cols2">
+      <div>
+        <table class="table" id="wordTable">
+          <thead><tr><th>단어</th><th>횟수</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="row" style="margin-bottom:10px;">
+          <span class="hint">에코 간격: 같은 단어가 &nbsp;</span>
+          <input type="text" id="echoN" value="3" style="width:52px; text-align:center; padding:6px;">
+          <span class="hint">&nbsp;문장 안에 재등장하면 표시</span>
+        </div>
+        <div id="echoList"><p class="empty">에코 없음</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 군더더기 -->
+  <section class="card full" style="margin-bottom:16px;">
+    <h2>군더더기 표현</h2>
+    <p class="desc">습관적으로 새어 나오는 표현을 직접 등록해서 빈도를 추적해요. 쉼표로 구분, 자유롭게 추가/삭제.</p>
+    <div class="filler-edit">
+      <div class="f">
+        <label for="fillers">추적할 표현</label>
+        <input type="text" id="fillers" value="것, 수, 너무, 정말, 약간, 그냥, 좀, 매우, 같은, 듯, 고 있다, 었던, 그런, 이런">
+      </div>
+      <button class="sm" id="applyFillers">적용</button>
+    </div>
+    <div class="metaline"><span>군더더기 밀도 <b id="f-density">0</b> / 1000자</span></div>
+    <table class="table" id="fillerTable" style="margin-top:10px;">
+      <thead><tr><th>표현</th><th>등장 문장</th><th>횟수</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- 스냅샷 -->
+  <section class="card full">
+    <h2>초고 비교 — 성장 보기</h2>
+    <p class="desc">분석을 날짜·제목과 함께 저장해 두면, 두 시점을 나란히 놓고 지표가 어떻게 변했는지 볼 수 있어요. 점수로 줄 세우지 않아요.</p>
+    <div class="snap-list" id="snapList"></div>
+    <div class="row" style="margin-top:14px;">
+      <button class="sm" id="compareBtn">선택한 2개 비교</button>
+      <span class="hint" id="snapHint">최대 2개까지 선택</span>
+    </div>
+    <div id="cmpResult"></div>
+  </section>
+
+  <footer class="site-foot">
+    <div class="foot-links">
+      <a href="https://x.com/E_FFILIA" target="_blank" rel="noopener">X · @E_FFILIA</a>
+      <a href="https://www.postype.com/@magam-hapsida" target="_blank" rel="noopener">Postype</a>
+      <a class="buy" href="https://kmong.com/gig/773637" target="_blank" rel="noopener">글을 짓다 (크몽) →</a>
+    </div>
+    <p class="footer-note">
+      문장 그래프 · 웹소설 작가를 위한 문장 분석 도구 · 만든이 에피<br>
+      모든 분석은 브라우저 안에서 처리되고, 입력한 글은 외부로 전송되지 않아요. · 수치는 '경향'을 보는 참고용
+    </p>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* ===================== 유틸 ===================== */
+const $ = id => document.getElementById(id);
+const debounce = (fn, ms) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; };
+const noSpace = s => s.replace(/\s/g,'');
+const fmt = n => n.toLocaleString('ko-KR');
+
+const PALETTE = ['#5b63d6','#1aa08c','#b8862a','#9159c2','#3b82c4','#cf5b54','#5d9e35','#bd5fa0','#2898a8','#7268cc'];
+
+/* Chart.js 전역 다크 테마 */
+if(window.Chart){
+  Chart.defaults.color = '#696b73';
+  Chart.defaults.borderColor = 'rgba(43,44,49,.08)';
+  Chart.defaults.font.family = "'Pretendard',sans-serif";
+  Chart.defaults.font.size = 11;
+}
+const charts = {};
+function paint(key, cfg){
+  if(charts[key]) charts[key].destroy();
+  charts[key] = new Chart($(key), cfg);
+}
+
+/* ===================== 텍스트 분할 ===================== */
+function splitParagraphs(text){
+  let parts = text.split(/\n{2,}/).map(p=>p.trim()).filter(Boolean);
+  if(parts.length < 2) parts = text.split(/\n/).map(p=>p.trim()).filter(Boolean);
+  return parts;
+}
+function splitSentences(text){
+  const out = [];
+  text.split(/\n+/).forEach(line=>{
+    const t = line.trim();
+    if(!t) return;
+    const m = t.match(/[^.!?…]*[.!?…]+|[^.!?…]+$/g) || [];
+    m.forEach(s=>{ const v = s.trim(); if(v) out.push(v); });
+  });
+  return out;
+}
+
+/* ===================== 종결어미 ===================== */
+const ENDING_PATTERNS = [
+  [/있었다$/,'~있었다'], [/없었다$/,'~없었다'],
+  [/였다$/,'~였다'], [/했다$/,'~했다'],
+  [/았다$/,'~았다'], [/었다$/,'~었다'],
+  [/된다$/,'~된다'], [/한다$/,'~한다'], [/는다$/,'~는다'],
+  [/이다$/,'~이다'],
+  [/까요$/,'~까요'], [/까$/,'~까(의문)'],
+  [/어요$/,'~어요'], [/아요$/,'~아요'], [/예요$/,'~예요'], [/에요$/,'~에요'], [/요$/,'~요'],
+  [/네$/,'~네'], [/군$/,'~군'], [/구나$/,'~구나'], [/잖아$/,'~잖아'],
+  [/지$/,'~지'], [/죠$/,'~죠'], [/나$/,'~나'], [/래$/,'~래'], [/거야$/,'~거야'],
+];
+const PAST_DA = new Set(['~있었다','~없었다','~였다','~했다','~았다','~었다','~았/었다']);
+
+// 한글 음절 분해 (초성/중성/종성)
+function decompose(ch){
+  const code = (ch||'').charCodeAt(0) - 0xAC00;
+  if(code < 0 || code > 11171) return null;
+  return { cho:Math.floor(code/588), jung:Math.floor(code/28)%21, jong:code%28 };
+}
+
+function classifyEnding(sentence){
+  let s = sentence.replace(/[\s.!?…"'""''「」『』\-—]+$/g,'');
+  s = s.replace(/^[\s"'""''「」『』]+/,'');
+  if(!s) return '기타';
+  for(const [re,name] of ENDING_PATTERNS){ if(re.test(s)) return name; }
+  if(/다$/.test(s) && s.length>=2){
+    if(/겠다$/.test(s)) return '~겠다';      // 의지·추측 (가겠다)
+    if(/있다$/.test(s)) return '~있다';      // 현재 (있다)
+    const d = decompose(s[s.length-2]);
+    if(d){
+      if(d.jong === 4)  return '~ㄴ다(현재)';  // 받침 ㄴ — 간다·온다·보인다
+      if(d.jong === 20) return '~았/었다';     // 받침 ㅆ — 갔다·왔다·봤다·떨어졌다 (축약 과거)
+    }
+    return '~다(기타)';
+  }
+  return '기타';
+}
+
+/* ===================== 대화/지문 ===================== */
+function dialogueRatio(text){
+  let dialogue = 0;
+  // 1차: 모호하지 않은 따옴표 (곡선 큰/작은따옴표 · 직선 큰따옴표 · 낫표)
+  const re1 = /"[^"]*"|"[^"]*"|'[^']*'|「[^」]*」|『[^』]*』/g;
+  let stripped = text.replace(re1, mt=>{ dialogue += noSpace(mt.slice(1,-1)).length; return ' '; });
+  // 2차: 직선 작은따옴표 — 여는 건 줄머리/공백/괄호 뒤, 닫는 건 공백/문장부호/줄끝 앞일 때만
+  //      (don't 같은 어포스트로피 오인 방지)
+  const re2 = /(^|[\s(\[「『"])'([^'\n]{0,400})'(?=$|[\s.,!?)\]」』"])/gm;
+  stripped = stripped.replace(re2, (mt, lead, inner)=>{ dialogue += noSpace(inner).length; return lead+' '; });
+  const narration = noSpace(stripped).length;
+  return { dialogue, narration };
+}
+
+/* ===================== 토큰화 ===================== */
+const PARTICLES = ['이라고','으로','에서','에게','한테','까지','부터','라고','이라는','라는','은','는','이','가','을','를','에','의','도','만','와','과','로','나','며','고','서','요']
+  .sort((a,b)=>b.length-a.length);
+const STOP = new Set(['그리고','하지만','그러나','그래서','그런데','그러면','그것','이것','저것','그녀','그는','자신','우리','당신','어떤','무슨','그냥','정말','이제','다시','조금']);
+function stripParticle(w){
+  if(!/[가-힣]$/.test(w)) return w;
+  for(const p of PARTICLES){ if(w.length > p.length+1 && w.endsWith(p)) return w.slice(0,-p.length); }
+  return w;
+}
+function tokenizePerSentence(sentences){
+  return sentences.map(s=>{
+    const cleaned = s.replace(/[^가-힣a-zA-Z0-9\s]/g,' ');
+    return cleaned.split(/\s+/).filter(w=>w.length>=2).map(stripParticle).filter(w=>w.length>=2);
+  });
+}
+
+/* ===================== 통계 ===================== */
+function mean(a){ return a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0; }
+function std(a){ if(a.length<2) return 0; const m=mean(a); return Math.sqrt(mean(a.map(x=>(x-m)**2))); }
+function entropy(counts){
+  const tot = counts.reduce((a,b)=>a+b,0); if(!tot) return 0;
+  return -counts.reduce((s,c)=>{ if(!c) return s; const p=c/tot; return s + p*Math.log2(p); },0);
+}
+
+/* ===================== 군더더기 ===================== */
+function fillerRegex(term){
+  let t = term.trim().replace(/^~/,'');
+  if(!t) return null;
+  const esc = t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s?');
+  return new RegExp(esc,'g');
+}
+
+/* ===================== 핵심 분석 ===================== */
+function analyze(text){
+  const sentences = splitSentences(text);
+  const paragraphs = splitParagraphs(text);
+  const charNoSpace = noSpace(text).length;
+  const charWithSpace = text.length;
+
+  const sentLens = sentences.map(s=>noSpace(s).length);
+  const avg = mean(sentLens), sd = std(sentLens);
+
+  // 종결어미
+  const endMap = {};
+  sentences.forEach(s=>{ const e = classifyEnding(s); endMap[e]=(endMap[e]||0)+1; });
+  const endSorted = Object.entries(endMap).sort((a,b)=>b[1]-a[1]);
+  const pastCount = sentences.reduce((n,s)=> PAST_DA.has(classifyEnding(s)) ? n+1 : n, 0);
+
+  // 대화
+  const dlg = dialogueRatio(text);
+
+  // 토큰 / 반복 / 에코
+  const tokensBySent = tokenizePerSentence(sentences);
+  const freq = {}; const occ = {};
+  tokensBySent.forEach((toks,i)=>{
+    const seen = new Set();
+    toks.forEach(w=>{
+      if(STOP.has(w)) return;
+      freq[w]=(freq[w]||0)+1;
+      if(!seen.has(w)){ (occ[w]=occ[w]||[]).push(i); seen.add(w); }
+    });
+  });
+  const topWords = Object.entries(freq).filter(([w,c])=>c>=2).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const allTokens = tokensBySent.flat();
+  const uniqTokens = new Set(allTokens).size;
+  const ttr = allTokens.length ? uniqTokens/allTokens.length : 0;
+
+  return {
+    text, sentences, paragraphs,
+    charNoSpace, charWithSpace,
+    sentLens, avg, sd,
+    endMap, endSorted, pastCount,
+    dlg,
+    freq, occ, topWords, ttr,
+    paraLens: paragraphs.map(p=>noSpace(p).length),
+  };
+}
+
+/* ===================== 렌더 ===================== */
+let CUR = null;
+
+function render(text){
+  if(!text.trim()){ clearAll(); return; }
+  const r = analyze(text);
+  CUR = r;
+
+  // 요약
+  $('s-char').innerHTML = fmt(r.charNoSpace)+'<span class="u">자</span>';
+  $('s-sent').innerHTML = fmt(r.sentences.length)+'<span class="u">문장</span>';
+  $('s-para').innerHTML = fmt(r.paragraphs.length)+'<span class="u">문단</span>';
+  $('s-avg').innerHTML = r.avg.toFixed(1)+'<span class="u">자</span>';
+
+  renderRhythm(r);
+  renderEnding(r);
+  renderDialogue(r);
+  renderPara(r);
+  renderWords(r);
+  renderFillers();
+}
+
+function renderRhythm(r){
+  $('r-avg').textContent = r.avg.toFixed(1);
+  $('r-std').textContent = r.sd.toFixed(1);
+  $('r-max').textContent = r.sentLens.length ? Math.max(...r.sentLens) : 0;
+  $('r-min').textContent = r.sentLens.length ? Math.min(...r.sentLens) : 0;
+
+  paint('chartRhythm', {
+    type:'bar',
+    data:{
+      labels:r.sentLens.map((_,i)=>i+1),
+      datasets:[
+        { label:'문장 길이', data:r.sentLens, backgroundColor:'#5b63d6', borderRadius:2, barPercentage:1, categoryPercentage:0.92 },
+        { label:'평균', type:'line', data:r.sentLens.map(()=>r.avg), borderColor:'#b8862a', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false }
+      ]
+    },
+    options:baseOpts({ xTitle:'문장 순서', yTitle:'글자수' })
+  });
+
+  // 단조 플래그: 평균 대비 변동계수가 낮으면
+  const cv = r.avg ? r.sd/r.avg : 0;
+  const el = $('r-flag');
+  if(r.sentLens.length < 4){ el.innerHTML=''; }
+  else if(cv < 0.35){
+    el.innerHTML = '<span class="flag warn"><span class="d"></span>리듬 단조 — 문장 길이가 비슷하게 이어져요. 긴 문장 사이에 짧은 한 문장을 끊어 넣어보면 호흡이 살아요.</span>';
+  } else {
+    el.innerHTML = '<span class="flag ok"><span class="d"></span>리듬 양호 — 길고 짧은 문장이 잘 섞여 있어요.</span>';
+  }
+}
+
+function renderEnding(r){
+  const top = r.endSorted.slice(0,10);
+  paint('chartEnding', {
+    type:'bar',
+    data:{ labels:top.map(e=>e[0]), datasets:[{ data:top.map(e=>e[1]), backgroundColor:top.map((_,i)=>PALETTE[i%PALETTE.length]), borderRadius:3 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.x+'문장'}}},
+      scales:{ x:{beginAtZero:true, ticks:{precision:0}}, y:{grid:{display:false}} } }
+  });
+
+  const n = r.sentences.length;
+  const el = $('e-flag');
+  if(n < 4){ el.innerHTML=''; return; }
+  const topRatio = r.endSorted.length ? r.endSorted[0][1]/n : 0;
+  const pastRatio = r.pastCount/n;
+  if(pastRatio >= 0.6){
+    el.innerHTML = `<span class="flag warn"><span class="d"></span>'~았다/었다/였다/했다' 같은 과거형 종결이 ${Math.round(pastRatio*100)}% — 평탄하게 읽힐 수 있어요.</span>`;
+  } else if(topRatio >= 0.55){
+    el.innerHTML = `<span class="flag warn"><span class="d"></span>'${r.endSorted[0][0]}' 어미가 ${Math.round(topRatio*100)}%로 몰려 있어요.</span>`;
+  } else {
+    el.innerHTML = '<span class="flag ok"><span class="d"></span>어미가 고르게 퍼져 있어요.</span>';
+  }
+}
+
+function renderDialogue(r){
+  const {dialogue, narration} = r.dlg;
+  const tot = dialogue+narration;
+  paint('chartDialogue', {
+    type:'doughnut',
+    data:{ labels:['대화','지문'], datasets:[{ data:[dialogue,narration], backgroundColor:['#5b63d6','#dcd8cd'], borderColor:'#fbfaf6', borderWidth:3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'66%',
+      plugins:{ legend:{position:'bottom', labels:{padding:14, boxWidth:12}},
+        tooltip:{callbacks:{label:c=>`${c.label} ${fmt(c.parsed)}자 (${tot?Math.round(c.parsed/tot*100):0}%)`}} } }
+  });
+  const dp = tot ? Math.round(dialogue/tot*100) : 0;
+  $('d-meta').innerHTML = `<span>대화 <b>${dp}%</b></span><span>지문 <b>${100-dp}%</b></span>`;
+}
+
+function renderPara(r){
+  paint('chartPara', {
+    type:'bar',
+    data:{ labels:r.paraLens.map((_,i)=>i+1), datasets:[{ data:r.paraLens, backgroundColor:'#1aa08c', borderRadius:3 }] },
+    options:baseOpts({ xTitle:'문단', yTitle:'글자수' })
+  });
+}
+
+function renderWords(r){
+  const tb = $('wordTable').querySelector('tbody');
+  if(!r.topWords.length){ tb.innerHTML = '<tr><td colspan="2" style="color:var(--faint)">2회 이상 반복된 단어 없음</td></tr>'; }
+  else{
+    const maxc = r.topWords[0][1];
+    tb.innerHTML = r.topWords.map(([w,c])=>{
+      const bw = Math.max(6, Math.round(c/maxc*90));
+      return `<tr><td><span class="bar-inline" style="width:${bw}px"></span>${escapeHtml(w)}</td><td>${c}회</td></tr>`;
+    }).join('');
+  }
+  renderEcho(r);
+}
+
+function renderEcho(r){
+  const N = Math.max(1, parseInt($('echoN').value)||3);
+  const out = [];
+  for(const [w,c] of r.topWords){
+    const positions = r.occ[w] || [];
+    const pairs = [];
+    for(let i=1;i<positions.length;i++){
+      if(positions[i]-positions[i-1] <= N) pairs.push([positions[i-1]+1, positions[i]+1]);
+    }
+    if(pairs.length){
+      const p = pairs.slice(0,4).map(([a,b])=>`<span class="pos">${a}↔${b}</span>`).join(', ');
+      out.push(`<div class="echo"><span class="w">${escapeHtml(w)}</span> · 문장 ${p}${pairs.length>4?' …':''}</div>`);
+    }
+  }
+  $('echoList').innerHTML = out.length ? out.join('') : '<p class="empty">'+N+'문장 안에서 반복되는 단어 없음 👍</p>';
+}
+
+function renderFillers(){
+  if(!CUR) return;
+  const terms = $('fillers').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const rows = []; let totalHits = 0;
+  terms.forEach(term=>{
+    const re = fillerRegex(term); if(!re) return;
+    let hits = 0; const sents = [];
+    CUR.sentences.forEach((s,i)=>{
+      const m = s.match(re);
+      if(m){ hits += m.length; sents.push(i+1); }
+    });
+    if(hits>0){ totalHits += hits; rows.push({term, hits, sents}); }
+  });
+  rows.sort((a,b)=>b.hits-a.hits);
+  const density = CUR.charNoSpace ? (totalHits/CUR.charNoSpace*1000) : 0;
+  $('f-density').textContent = density.toFixed(1);
+  const tb = $('fillerTable').querySelector('tbody');
+  tb.innerHTML = rows.length
+    ? rows.map(r=>{
+        const pos = r.sents.slice(0,12).map(n=>`<span class="tag">${n}</span>`).join('') + (r.sents.length>12?' …':'');
+        return `<tr><td><b>${escapeHtml(r.term)}</b></td><td>${pos}</td><td>${r.hits}회</td></tr>`;
+      }).join('')
+    : '<tr><td colspan="3" style="color:var(--faint)">등록한 표현이 글에 없어요.</td></tr>';
+}
+
+function baseOpts({xTitle, yTitle}){
+  return { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>fmt(c.parsed.y)+'자'}} },
+    scales:{
+      x:{ title:{display:!!xTitle, text:xTitle, color:'#5a6072'}, ticks:{maxTicksLimit:20, autoSkip:true}, grid:{display:false} },
+      y:{ title:{display:!!yTitle, text:yTitle, color:'#5a6072'}, beginAtZero:true, ticks:{precision:0} }
+    } };
+}
+
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function clearAll(){
+  CUR = null;
+  ['s-char','s-sent','s-para'].forEach(id=>$(id).innerHTML='0');
+  $('s-avg').innerHTML='0';
+  Object.values(charts).forEach(c=>c.destroy());
+  ['r-flag','e-flag','d-meta'].forEach(id=>$(id).innerHTML='');
+  $('wordTable').querySelector('tbody').innerHTML='';
+  $('echoList').innerHTML='<p class="empty">에코 없음</p>';
+  $('fillerTable').querySelector('tbody').innerHTML='';
+  $('f-density').textContent='0';
+}
+
+/* ===================== 스냅샷 ===================== */
+const SKEY = 'munjang_graph_snapshots_v1';
+const getSnaps = () => { try{ return JSON.parse(localStorage.getItem(SKEY))||[]; }catch{ return []; } };
+const setSnaps = a => localStorage.setItem(SKEY, JSON.stringify(a));
+
+// 비교에 쓸 지표 정의 (dir: 'up'=클수록 좋음, 'down'=작을수록 좋음, 'neu'=중립)
+const METRICS = [
+  {key:'char',  label:'총 글자수',       unit:'자',  dir:'neu', dec:0},
+  {key:'sent',  label:'문장 수',         unit:'',    dir:'neu', dec:0},
+  {key:'avg',   label:'평균 문장 길이',   unit:'자',  dir:'neu', dec:1},
+  {key:'std',   label:'문장 길이 다양성', unit:'',    dir:'up',  dec:1},
+  {key:'evar',  label:'종결어미 다양성',  unit:'',    dir:'up',  dec:2},
+  {key:'etop',  label:'최다 어미 비율',   unit:'%',   dir:'down',dec:0},
+  {key:'dlg',   label:'대화 비율',       unit:'%',   dir:'neu', dec:0},
+  {key:'ttr',   label:'어휘 다양성',     unit:'%',   dir:'up',  dec:1},
+  {key:'fill',  label:'군더더기 밀도',   unit:'/1k', dir:'down',dec:1},
+];
+
+function snapshotMetrics(){
+  if(!CUR) return null;
+  const n = CUR.sentences.length;
+  const tot = CUR.dlg.dialogue + CUR.dlg.narration;
+  // 군더더기 밀도
+  const terms = $('fillers').value.split(',').map(t=>t.trim()).filter(Boolean);
+  let hits=0; terms.forEach(t=>{ const re=fillerRegex(t); if(re){ const m=CUR.text.match(re); if(m) hits+=m.length; } });
+  return {
+    char: CUR.charNoSpace,
+    sent: n,
+    avg: CUR.avg,
+    std: CUR.sd,
+    evar: entropy(CUR.endSorted.map(e=>e[1])),
+    etop: n ? CUR.endSorted[0][1]/n*100 : 0,
+    dlg: tot ? CUR.dlg.dialogue/tot*100 : 0,
+    ttr: CUR.ttr*100,
+    fill: CUR.charNoSpace ? hits/CUR.charNoSpace*1000 : 0,
+  };
+}
+
+function saveSnapshot(){
+  if(!CUR){ alert('먼저 글을 붙여넣어 주세요.'); return; }
+  const title = $('title').value.trim() || '제목 없음';
+  const m = snapshotMetrics();
+  const snaps = getSnaps();
+  snaps.unshift({ id:Date.now(), title, date:new Date().toISOString(), metrics:m });
+  setSnaps(snaps);
+  renderSnapList();
+  flashHint('"'+title+'" 저장됨');
+}
+
+let flashTimer;
+function flashHint(msg){
+  const h=$('snapHint'); h.textContent=msg; h.style.color='var(--acc2)';
+  clearTimeout(flashTimer);
+  flashTimer=setTimeout(()=>{ h.textContent='최대 2개까지 선택'; h.style.color=''; }, 2500);
+}
+
+function renderSnapList(){
+  const snaps = getSnaps();
+  const el = $('snapList');
+  if(!snaps.length){ el.innerHTML='<p class="empty">저장된 스냅샷이 없어요. 분석 후 위의 "스냅샷 저장"을 눌러보세요.</p>'; return; }
+  el.innerHTML = snaps.map(s=>{
+    const d = new Date(s.date);
+    const ds = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `<div class="snap" data-id="${s.id}">
+      <input type="checkbox" class="snap-cb" value="${s.id}">
+      <div class="info"><div class="t">${escapeHtml(s.title)}</div>
+      <div class="m">${ds} · ${fmt(Math.round(s.metrics.char))}자 · ${Math.round(s.metrics.sent)}문장</div></div>
+      <span class="del" data-del="${s.id}" title="삭제">×</span>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.snap-cb').forEach(cb=>cb.addEventListener('change', onSnapCheck));
+  el.querySelectorAll('[data-del]').forEach(x=>x.addEventListener('click', e=>{
+    const id = +e.target.dataset.del;
+    setSnaps(getSnaps().filter(s=>s.id!==id));
+    renderSnapList(); $('cmpResult').innerHTML='';
+  }));
+}
+
+function onSnapCheck(){
+  const checked = [...document.querySelectorAll('.snap-cb:checked')];
+  if(checked.length>2){ this.checked=false; flashHint('2개까지만 선택돼요'); }
+  document.querySelectorAll('.snap').forEach(s=>{
+    const cb=s.querySelector('.snap-cb'); s.classList.toggle('sel', cb.checked);
+  });
+}
+
+function compareSnapshots(){
+  const ids = [...document.querySelectorAll('.snap-cb:checked')].map(c=>+c.value);
+  if(ids.length!==2){ flashHint('비교하려면 2개를 선택하세요'); return; }
+  const snaps = getSnaps();
+  let a = snaps.find(s=>s.id===ids[0]), b = snaps.find(s=>s.id===ids[1]);
+  // 오래된 것을 왼쪽(이전), 최신을 오른쪽(이후)
+  if(new Date(a.date) > new Date(b.date)){ [a,b]=[b,a]; }
+
+  const rows = METRICS.map(mt=>{
+    const va = a.metrics[mt.key], vb = b.metrics[mt.key];
+    const diff = vb - va;
+    let cls='neu', arrow='→';
+    if(Math.abs(diff) > 1e-9){
+      const improved = (mt.dir==='up' && diff>0) || (mt.dir==='down' && diff<0);
+      if(mt.dir==='neu'){ cls='neu'; arrow = diff>0?'↑':'↓'; }
+      else { cls = improved?'up':'down'; arrow = diff>0?'↑':'↓'; }
+    }
+    const fv = (v)=> v.toFixed(mt.dec) + (mt.unit?'':'');
+    const dtxt = (diff>0?'+':'') + diff.toFixed(mt.dec);
+    return `<tr>
+      <td>${mt.label}<small style="color:var(--faint)"> ${mt.unit}</small></td>
+      <td class="num">${fv(va)}</td>
+      <td class="num">${fv(vb)}</td>
+      <td class="num delta ${cls}">${arrow} ${dtxt}</td>
+    </tr>`;
+  }).join('');
+
+  const dl = new Date(a.date), dr = new Date(b.date);
+  const dstr = d => `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+  $('cmpResult').innerHTML = `
+    <div class="cmp-scroll"><table class="cmp">
+      <thead><tr>
+        <th>지표</th>
+        <th class="hd">${escapeHtml(a.title)}<small>이전 · ${dstr(dl)}</small></th>
+        <th class="hd">${escapeHtml(b.title)}<small>이후 · ${dstr(dr)}</small></th>
+        <th style="text-align:right;">변화</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <p class="hint" style="margin-top:12px;">초록 화살표는 다양성↑·군더더기↓ 같은 '결이 풍부해진' 방향, 회색은 중립(좋고 나쁨이 아니라 작풍의 변화)이에요.</p>`;
+}
+
+/* ===================== 예시 ===================== */
+const SAMPLE = `비가 내렸다. 그는 창밖을 바라보았다. 회색 하늘이 도시를 덮고 있었다.
+
+"늦었네." 그녀가 말했다.
+"미안. 길이 막혔어." 그가 대답했다.
+
+그는 우산을 접었다. 물방울이 바닥에 떨어졌다. 그녀는 아무 말도 하지 않았다. 그저 그를 바라보았다. 오래된 약속 하나가, 두 사람 사이에 조용히 놓여 있었다. 그것은 너무 무거웠고, 정말 오래되었으며, 약간은 슬픈 것이었다.
+
+'이제 와서 무슨 말을 해야 할까.' 그는 생각했다. 그녀의 눈은 젖어 있었다. 그는 손을 뻗었다. 그러나 닿지 못했다.`;
+
+/* ===================== 이벤트 ===================== */
+const run = debounce(()=>render($('src').value), 350);
+$('src').addEventListener('input', run);
+$('echoN').addEventListener('input', debounce(()=>{ if(CUR) renderEcho(CUR); }, 250));
+$('applyFillers').addEventListener('click', renderFillers);
+$('fillers').addEventListener('keydown', e=>{ if(e.key==='Enter') renderFillers(); });
+$('saveSnap').addEventListener('click', saveSnapshot);
+$('compareBtn').addEventListener('click', compareSnapshots);
+$('loadSample').addEventListener('click', ()=>{ $('src').value=SAMPLE; $('title').value='예시 · 빗속의 약속'; render(SAMPLE); });
+
+renderSnapList();
+</script>
+</body>
+</html>
